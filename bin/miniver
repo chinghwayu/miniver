@@ -136,6 +136,7 @@ def extract_miniver_from_local():
 
 def get_parser():
     parser = argparse.ArgumentParser(description="Interact with miniver")
+    parser.add_argument("-l", action="store_true", dest="lightweight")
     parser.add_argument("-v", "--version", action="version", version=_miniver_version)
     # TODO: when we can depend on Python 3.7 make this "add_subparsers(required=True)"
     subparsers = parser.add_subparsers()
@@ -193,7 +194,8 @@ def install(args):
     print("\n".join((msg, _setup_template)).format(package_dir=package_dir))
 
 
-def ver():
+def ver(args):
+    lightweight=args.lightweight
     cwd = os.path.abspath(".")
     try:
         version_location, = glob.glob(
@@ -218,7 +220,7 @@ def ver():
     version_spec = spec_from_file_location("version", version_location)
     version = module_from_spec(version_spec)
     version_spec.loader.exec_module(version)
-    print(version.get_version())
+    print(version.get_version(lightweight=lightweight))
 
 
 def main():
@@ -229,7 +231,7 @@ def main():
     if "dispatch" in args:
         args.dispatch(args)
     else:
-        ver()
+        ver(args)
 
 
 if __name__ == "__main__":

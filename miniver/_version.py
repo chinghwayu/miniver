@@ -27,11 +27,11 @@ else:
 STATIC_VERSION_FILE = "_static_version.py"
 
 
-def get_version(version_file=STATIC_VERSION_FILE):
+def get_version(version_file=STATIC_VERSION_FILE, lightweight=False):
     version_info = get_static_version_info(version_file)
     version = version_info["version"]
     if version == "__use_git__":
-        version = get_version_from_git()
+        version = get_version_from_git(lightweight=lightweight)
         if not version:
             version = get_version_from_git_archive(version_info)
         if not version:
@@ -69,7 +69,7 @@ def pep440_format(version_info):
     return "".join(version_parts)
 
 
-def get_version_from_git():
+def get_version_from_git(lightweight=False):
     try:
         p = subprocess.Popen(
             ["git", "rev-parse", "--show-toplevel"],
@@ -92,8 +92,13 @@ def get_version_from_git():
     # git hash, '--always' returns the git hash even if there are no tags.
     for opts in [["--first-parent"], []]:
         try:
+            cmd_list = (
+                ["git", "describe", "--long", "--always", "--tags"]
+                if lightweight
+                else ["git", "describe", "--long", "--always"]
+            )
             p = subprocess.Popen(
-                ["git", "describe", "--long", "--always"] + opts,
+                cmd_list + opts,
                 cwd=distr_root,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
